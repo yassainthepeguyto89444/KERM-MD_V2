@@ -25,7 +25,7 @@
   </a>
    
 <p align="center">
-<a href="https://github.com/Kgtech-cmr/KERM-MD_V2/stargazers/"><img title="Stars" src="https://img.shields.io/github/stars/Kgtech-cmr/KERMMD_V2?color=white&style=flat-square"></a>
+<a href="https://github.com/Kgtech-cmr/KERM-MD_V2/stargazers/"><img title="Stars" src="https://img.shields.io/github/stars/Kgtech-cmr/KERM-MD_V2?color=white&style=flat-square"></a>
 <a href="https://github.com/Kgtech-cmr/KERM-MD_V2/network/members"><img title="Forks" src="https://img.shields.io/github/forks/Kgtech-cmr/KERM-MD_V2?color=yellow&style=flat-square"></a>
 <a href="https://github.com/Kgtech-cmr/KERM-MD_V2/watchers"><img title="Watching" src="https://img.shields.io/github/watchers/Kgtech-cmr/KERM-MD_V2?label=Watchers&color=red&style=flat-square"></a>
 <a href="https://github.com/Janithsadanuwan/Queen-Nilu-Md/"><img title="Size" src="https://img.shields.io/github/repo-size/AlipBot/Api-Alpis?style=flat-square&color=darkred"></a>
