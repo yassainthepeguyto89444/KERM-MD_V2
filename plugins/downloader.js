@@ -1671,6 +1671,7 @@ smd(
    alias: ["audio","song"],
    desc: "Downloads audio from youtube.",
    category: "downloader",
+   react: "🎵",
    filename: __filename,
    use: "<give text>"
  }, async (_0x2c2023, _0x4ec99f) => {
@@ -1699,6 +1700,7 @@ smd(
    alias: ["yt", "ytsearch"],
    desc: "Search Song From youtube",
    category: "downloader",
+   react: "🔍",
    filename: __filename,
    use: "<Yt Search Query>"
  }, async (_0x1c8285, _0xca939c) => {
