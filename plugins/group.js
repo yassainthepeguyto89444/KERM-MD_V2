@@ -763,7 +763,9 @@ smd({
     pattern: "kickall",
     fromMe: mode,
     desc: "Kicks all non-admin members from the group.",
-    type: "group",
+    category: "group",
+    react: "💥",
+    filename: __filename,
 },
 async (message, match) => {
     // Check if the command is used in a group
