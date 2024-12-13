@@ -373,154 +373,162 @@ smd(
      if (!url) {
        return await m.send("*_Please provide a Google Drive URL!_*");
      }
- 
+
+     // Validation de l'URL Google Drive
+     const regex = /https:\/\/drive\.google\.com\/.*[?&]id=([a-zA-Z0-9_-]+)/;
+     if (!regex.test(url)) {
+       return await m.send("*_Invalid Google Drive URL!_*");
+     }
+
+     // Construction de l'API URL pour télécharger le fichier
      const apiUrl = `https://api.maher-zubair.tech/download/gdrive?url=${encodeURIComponent(url)}`;
      const response = await fetch(apiUrl);
- 
+
+     // Vérification de la réponse de l'API
      if (!response.ok) {
        return await m.send(`*_Error: ${response.status} ${response.statusText}_*`);
      }
- 
+
      const data = await response.json();
- 
+
+     // Vérification de la réponse de l'API pour s'assurer du bon statut
      if (data.status !== 200) {
        return await m.send(`*_Error: ${data.status} - ${data.result || "Unknown error"}_*`);
      }
- 
+
+     // Récupération des informations du fichier
      const { downloadUrl, fileName, fileSize, mimetype } = data.result;
      const caption = `*File:* ${fileName}\n*Size:* ${fileSize}\n*Type:* ${mimetype}`;
- 
+
+     // Envoi du fichier téléchargé
      await m.bot.sendFromUrl(m.from, downloadUrl, caption, m, {}, "file");
    } catch (e) {
+     // Gestion des erreurs et envoi du message d'erreur
      await m.error(`${e}\n\ncommand: gdrive`, e);
    }
  });
- smd(
-   {
-     pattern: "spotify2",
-     alias: ["sp2"],
-     desc: "Downloads a Spotify song.",
-     category: "downloader",
-     filename: __filename,
-     use: "<Spotify URL>",
-   },
-   async (message, input) => {
-     try {
-       const url = input.trim();
-       if (!url || !isValidUrl(url)) {
-         return await message.send("*_Please provide a valid Spotify URL._*");
-       }
- 
-       const apiUrl = `https://api.maher-zubair.tech/download/spotify?url=${encodeURIComponent(
-         url
-       )}`;
-       const response = await axios.get(apiUrl);
-       const data = response.data;
- 
-       if (!data || data.status !== 200) {
-         return await message.reply("*Failed to download the Spotify song.*");
-       }
- 
-       const {
-         song,
-         artist,
-         album_name,
-         release_date,
-         cover_url,
-         url: songUrl,
-       } = data.result;
- 
-       let output = `*Song:* ${song}\n`;
-       output += `*Artist:* ${artist.join(", ")}\n`;
-       output += `*Album:* ${album_name}\n`;
-       output += `*Release Date:* ${release_date}\n\n`;
-       output += `*Cover Image:* ${cover_url}\n\n`;
- 
-       const buffer = await axios.get(songUrl, { responseType: "arraybuffer" });
-       const fileName = `${song.replace(/\s/g, "_")}.mp3`;
- 
-       await message.bot.sendMessage(
-         message.chat,
-         {
-           audio: buffer.data,
-           fileName: fileName,
-           mimetype: "audio/mpeg",
-           caption: output,
-         },
-         { quoted: message }
-       );
-     } catch (error) {
-       await message.error(
-         error + "\n\nCommand: spotify2",
-         error,
-         "*Failed to download the Spotify song.*"
-       );
-     }
-   }
- );
- 
- function isValidUrl(url) {
-   try {
-     new URL(url);
-     return true;
-   } catch (_) {
-     return false;
-   }
- }
- smd(
-   {
-     pattern: "spotify",
-     alias: ["sp"],
-     desc: "Searches for Spotify tracks.",
-     category: "search",
-     filename: __filename,
-     use: "<search query>",
-   },
-   async (message, input) => {
-     try {
-       const query = input.trim();
-       if (!query) {
-         return await message.send("*_Please provide a search query._*");
-       }
- 
-       const apiUrl = `https://api.maher-zubair.tech/search/spotify?q=${encodeURIComponent(
-         query
-       )}`;
-       const response = await axios.get(apiUrl);
-       const data = response.data;
- 
-       if (!data || data.status !== 200) {
-         return await message.reply("*Failed to fetch Spotify tracks.*");
-       }
- 
-       const tracks = data.result;
-       if (!tracks || tracks.length === 0) {
-         return await message.reply("*No Spotify tracks found.*");
-       }
- 
-       let output = "*Spotify Search Results:*\n\n";
-       for (let i = 0; i < tracks.length; i++) {
-         const track = tracks[i];
-         output += `*${i + 1}. ${track.title}*\n`;
-         output += `Artist: ${track.artist}\n`;
-         output += `Duration: ${formatDuration(track.duration)}\n`;
-         output += `Popularity: ${track.popularity}\n`;
-         output += `Preview: ${
-           track.preview ? track.preview : "No preview available"
-         }\n`;
-         output += `URL: ${track.url}\n\n`;
-       }
- 
-       return await message.send(output, { quoted: message });
-     } catch (error) {
-       await message.error(
-         error + "\n\nCommand: spotify",
-         error,
-         "*Failed to search Spotify.*"
-       );
-     }
-   }
- );
+ const axios = require("axios");
+
+smd(
+  {
+    pattern: "spotify2",
+    alias: ["sp2"],
+    desc: "Downloads a Spotify song.",
+    category: "downloader",
+    filename: __filename,
+    use: "<Spotify URL>",
+  },
+  async (message, input) => {
+    try {
+      const url = input.trim();
+      if (!url || !isValidUrl(url)) {
+        return await message.send("*_Please provide a valid Spotify URL._*");
+      }
+
+      const apiUrl = `https://api.maher-zubair.tech/download/spotify?url=${encodeURIComponent(url)}`;
+      const response = await axios.get(apiUrl);
+      const data = response.data;
+
+      if (!data || data.status !== 200) {
+        return await message.reply("*Failed to download the Spotify song.*");
+      }
+
+      const { song, artist, album_name, release_date, cover_url, url: songUrl } = data.result;
+
+      let output = `*Song:* ${song}\n`;
+      output += `*Artist:* ${artist.join(", ")}\n`;
+      output += `*Album:* ${album_name}\n`;
+      output += `*Release Date:* ${release_date}\n\n`;
+      output += `*Cover Image:* ${cover_url}\n\n`;
+
+      const buffer = await axios.get(songUrl, { responseType: "arraybuffer" });
+      const fileName = `${song.replace(/\s/g, "_")}.mp3`;
+
+      await message.bot.sendMessage(
+        message.chat,
+        {
+          audio: buffer.data,
+          fileName: fileName,
+          mimetype: "audio/mpeg",
+          caption: output,
+        },
+        { quoted: message }
+      );
+    } catch (error) {
+      await message.error(
+        `Error: ${error.message || error}\n\nCommand: spotify2`,
+        error,
+        "*Failed to download the Spotify song.*"
+      );
+    }
+  }
+);
+
+function isValidUrl(url) {
+  try {
+    new URL(url);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+smd(
+  {
+    pattern: "spotify",
+    alias: ["sp"],
+    desc: "Searches for Spotify tracks.",
+    category: "search",
+    filename: __filename,
+    use: "<search query>",
+  },
+  async (message, input) => {
+    try {
+      const query = input.trim();
+      if (!query) {
+        return await message.send("*_Please provide a search query._*");
+      }
+
+      const apiUrl = `https://api.maher-zubair.tech/search/spotify?q=${encodeURIComponent(query)}`;
+      const response = await axios.get(apiUrl);
+      const data = response.data;
+
+      if (!data || data.status !== 200) {
+        return await message.reply("*Failed to fetch Spotify tracks.*");
+      }
+
+      const tracks = data.result;
+      if (!tracks || tracks.length === 0) {
+        return await message.reply("*No Spotify tracks found.*");
+      }
+
+      let output = "*Spotify Search Results:*\n\n";
+      for (let i = 0; i < tracks.length; i++) {
+        const track = tracks[i];
+        output += `*${i + 1}. ${track.title}*\n`;
+        output += `Artist: ${track.artist}\n`;
+        output += `Duration: ${formatDuration(track.duration)}\n`;
+        output += `Popularity: ${track.popularity}\n`;
+        output += `Preview: ${track.preview ? track.preview : "No preview available"}\n`;
+        output += `URL: ${track.url}\n\n`;
+      }
+
+      return await message.send(output, { quoted: message });
+    } catch (error) {
+      await message.error(
+        `Error: ${error.message || error}\n\nCommand: spotify`,
+        error,
+        "*Failed to search Spotify.*"
+      );
+    }
+  }
+);
+
+function formatDuration(duration) {
+  const minutes = Math.floor(duration / 60);
+  const seconds = duration % 60;
+  return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+}
  
  function formatDuration(durationMs) {
    const seconds = Math.floor((durationMs / 1000) % 60);
@@ -989,68 +997,92 @@ smd(
      }
    }
  );
- smd({
+ const fs = require("fs");
+const axios = require("axios");
+
+smd({
    pattern: "apk",
    alias: ["modapk"],
-   desc: "Downloads apks  .",
+   desc: "Downloads APK files.",
    category: "downloader",
    filename: __filename,
-   use: "<add sticker url.>"
- }, async (_0x7b09ff, _0x4af114) => {
+   use: "<app name>",
+}, async (m, appName) => {
    try {
-     if (!_0x4af114) {
-       return _0x7b09ff.reply("*_Uhh dear, Give me App Name!_*");
+     if (!appName) {
+       return m.reply("*_Please provide the app name!_*");
      }
-     let _0x468cc8 = await search(_0x4af114);
-     let _0x538b40 = {};
-     if (_0x468cc8.length) {
-       _0x538b40 = await download(_0x468cc8[0].id);
-     } else {
-       return _0x7b09ff.reply("*_Apk not found, Try another name!!_*");
+
+     let searchResults = await search(appName);
+     if (searchResults.length === 0) {
+       return m.reply("*_APK not found, try another name!_*");
      }
-     const _0x48bc12 = parseInt(_0x538b40.size);
-     if (_0x48bc12 > 200) {
-       return _0x7b09ff.reply("â File size bigger than 200mb.");
+
+     let appDetails = await download(searchResults[0].id);
+     if (!appDetails) {
+       return m.reply("*_Failed to retrieve APK details._*");
      }
-     const _0x31321c = _0x538b40.dllink;
-     let _0x24f726 = await fancytext("ã *á©á­á¦  ááªá¯áãáªá©áá´á* ã\n\n*APP Name :* " + _0x538b40.name + "\n*App Id :* " + _0x538b40.package + "\n*Last Up :* " + _0x538b40.lastup + "\n*App Size :* " + _0x538b40.size + "\n\n\n " + Config.caption, 25);
-     const _0x3e266b = (_0x538b40?.name || "Downloader") + ".apk";
-     const _0x585f79 = "temp/" + _0x3e266b;
-     let _0x533c85 = await _0x7b09ff.reply(_0x538b40.icon, {
-       caption: _0x24f726
-     }, "img", _0x7b09ff);
-     axios.get(_0x31321c, {
-       responseType: "stream"
-     }).then(_0x3cdb1d => {
-       const _0x406256 = fs.createWriteStream(_0x585f79);
-       _0x3cdb1d.data.pipe(_0x406256);
-       return new Promise((_0xd7f976, _0x27915) => {
-         _0x406256.on("finish", _0xd7f976);
-         _0x406256.on("error", _0x27915);
+
+     const fileSize = parseInt(appDetails.size);
+     if (fileSize > 200) {
+       return m.reply("*_File size exceeds 200MB._*");
+     }
+
+     const downloadUrl = appDetails.dllink;
+     const appDescription = await fancytext(
+       `【 *App Details* 】\n\n*App Name:* ${appDetails.name}\n*Package Id:* ${appDetails.package}\n*Last Update:* ${appDetails.lastup}\n*Size:* ${appDetails.size}\n\n${Config.caption}`,
+       25
+     );
+     
+     const fileName = `${appDetails.name.replace(/\s/g, "_")}.apk`;
+     const tempFilePath = `temp/${fileName}`;
+
+     // Send app icon and description as an image message
+     let sentMessage = await m.reply(appDetails.icon, {
+       caption: appDescription,
+     }, "img", m);
+
+     // Download the APK file
+     axios.get(downloadUrl, { responseType: "stream" })
+       .then(response => {
+         const writeStream = fs.createWriteStream(tempFilePath);
+         response.data.pipe(writeStream);
+
+         return new Promise((resolve, reject) => {
+           writeStream.on("finish", resolve);
+           writeStream.on("error", reject);
+         });
+       })
+       .then(() => {
+         // Prepare the APK file for sending
+         let fileBuffer = {
+           document: fs.readFileSync(tempFilePath),
+           mimetype: "application/vnd.android.package-archive",
+           fileName: fileName,
+         };
+
+         // Send APK file
+         m.bot.sendMessage(m.jid, fileBuffer, { quoted: sentMessage });
+
+         // Clean up temporary file
+         try {
+           fs.unlinkSync(tempFilePath);
+         } catch (err) {
+           console.error("Failed to delete temp file:", err);
+         }
+       })
+       .catch(err => {
+         console.error("Error downloading APK:", err);
+         try {
+           fs.unlinkSync(tempFilePath);
+         } catch {}
+         m.reply("*_APK not found or download failed._*");
        });
-     }).then(() => {
-       let _0x389371 = {
-         document: fs.readFileSync(_0x585f79),
-         mimetype: "application/vnd.android.package-archive",
-         fileName: _0x3e266b
-       };
-       _0x7b09ff.bot.sendMessage(_0x7b09ff.jid, _0x389371, {
-         quoted: _0x533c85
-       });
-       try {
-         fs.unlink(_0x585f79);
-       } catch {}
-     }).catch(_0x2490b5 => {
-       try {
-         fs.unlink(_0x585f79);
-       } catch {}
-       ;
-       _0x7b09ff.reply("*_Apk not Found, Sorry_*");
-     });
-   } catch (_0x4540ef) {
-     await _0x7b09ff.error(_0x4540ef + "\n\ncommand: apk", _0x4540ef, "*_Apk not Found!_*");
+   } catch (error) {
+     console.error("Error in command:", error);
+     await m.error(error + "\n\ncommand: apk", error, "*_APK not found or error occurred!_*");
    }
- });
+});
  cmd({
    pattern: "apks",
    alias: ["apksearch"],
@@ -1668,62 +1700,99 @@ smd(
  );
  smd({
    pattern: "play",
-   alias: ["audio","song"],
-   desc: "Downloads audio from youtube.",
+   alias: ["audio", "song"],
+   desc: "Downloads audio from YouTube.",
    category: "downloader",
    react: "🎵",
    filename: __filename,
-   use: "<give text>"
- }, async (_0x2c2023, _0x4ec99f) => {
+   use: "<search query>"
+}, async (message, query) => {
    try {
-     if (!_0x4ec99f) {
-       return await _0x2c2023.reply("*_Give Me Search Query_*");
+     if (!query) {
+       return await message.reply("*_Please provide a search query_*");
      }
-     let _0x3b2ca6 = await yts(_0x4ec99f);
-     let _0x4123ae = _0x3b2ca6.all[0];
-     let _0x5883a9 = "\t *KERM_MD-V2 SONG DOWNLOADER*   \n\n*Title :* " + _0x4123ae.title + "\nUrl : " + _0x4123ae.url + "\n*Description :* " + _0x4123ae.timestamp + "\n*Views :* " + _0x4123ae.views + "\n*Uploaded :* " + _0x4123ae.ago + "\n*Author :* " + _0x4123ae.author.name + "\n\n\n_Reply 1 To Video_ Or _1 document_\n_Reply 2 To Audio_ Or _2 document_";
-     let _0x3885cc = await smdBuffer(_0x4123ae.thumbnail);
-     var _0x44a363 = {
-       ...(await _0x2c2023.bot.contextInfo(Config.botname, "Êá´á´á´á´Êá´ ê±á´É´É¢", _0x3885cc))
+
+     // Search for YouTube videos
+     let searchResults = await yts(query);
+     let video = searchResults.all[0];
+
+     // Constructing message content
+     let messageContent = `
+       *KERM_MD-V2 SONG DOWNLOADER*\n\n
+       *Title:* ${video.title}\n
+       *URL:* ${video.url}\n
+       *Description:* ${video.timestamp}\n
+       *Views:* ${video.views}\n
+       *Uploaded:* ${video.ago}\n
+       *Author:* ${video.author.name}\n\n
+       _Reply 1 for Video or 1 document_\n
+       _Reply 2 for Audio or 2 document_
+     `;
+     
+     // Get thumbnail buffer
+     let thumbnailBuffer = await smdBuffer(video.thumbnail);
+
+     // Send message with video details and thumbnail
+     let contextInfo = {
+       ...(await message.bot.contextInfo(Config.botname, "🎵 Audio Download", thumbnailBuffer))
      };
-     await _0x2c2023.bot.sendMessage(_0x2c2023.jid, {
-       image: _0x3885cc,
-       caption: _0x5883a9,
-       contextInfo: _0x44a363
+     await message.bot.sendMessage(message.jid, {
+       image: thumbnailBuffer,
+       caption: messageContent,
+       contextInfo: contextInfo
      });
-   } catch (_0x86b411) {
-     return _0x2c2023.error(_0x86b411 + "\n\ncommand: mediafire", _0x86b411, "*_File not found!!_*");
+
+   } catch (error) {
+     await message.error(error + "\n\nCommand: play", error, "*_Error occurred while fetching song!_*");
    }
- });
+});
  cmd({
    pattern: "yts",
    alias: ["yt", "ytsearch"],
-   desc: "Search Song From youtube",
+   desc: "Search Song From YouTube",
    category: "downloader",
    react: "🔍",
    filename: __filename,
-   use: "<Yt Search Query>"
- }, async (_0x1c8285, _0xca939c) => {
+   use: "<YouTube Search Query>"
+}, async (message, query) => {
    try {
-     if (!_0xca939c) {
-       return await _0x1c8285.reply("*_Give Me Search Query!_*");
+     // Vérifie si l'utilisateur a fourni une requête
+     if (!query) {
+       return await message.reply("*_Please provide a search query!*");
      }
-     let _0x2878ec = await yts(_0xca939c);
-     let _0x4186e4 = "*KERM-MD_V2 YOUTUBE DOWNLOADER* \n*_______________________________* \n\n_Reply Any Number To Download._\n  _For Audio: 1 mp3._\n  _For Video: 1 video._\n  _For document: 1 document._\n\n_Results For : " + _0xca939c + "_ \n\n";
-     let _0x463366 = 1;
-     for (let _0x308e22 of _0x2878ec.all) {
-       _0x4186e4 += " \n*" + _0x463366++ + " : " + _0x308e22.title + (_0x308e22.timestamp ? "(" + _0x308e22.timestamp + ")" : "") + "*\n*Url : " + _0x308e22.url + "*";
+
+     // Recherche la vidéo sur YouTube
+     let searchResults = await yts(query);
+     
+     // Préparation du message avec les résultats de recherche
+     let responseText = "*KERM-MD_V2 YOUTUBE DOWNLOADER*\n*_______________________________*\n\n";
+     responseText += "_Reply with any number to download_\n";
+     responseText += "_For Audio: Reply with '1' for MP3_\n";
+     responseText += "_For Video: Reply with '1' for Video_\n";
+     responseText += "_For Document: Reply with '1' for Document_\n\n";
+     responseText += `_Results for: ${query}\n\n`;
+
+     // Ajouter chaque résultat à la réponse
+     let resultCount = 1;
+     for (let video of searchResults.all) {
+       responseText += `\n*${resultCount++} : ${video.title}${video.timestamp ? ` (${video.timestamp})` : ""}*\n`;
+       responseText += `*URL:* ${video.url}\n`;
      }
-     return await _0x1c8285.sendMessage(_0x1c8285.chat, {
+
+     // Envoi de la réponse avec l'image de la première vidéo
+     await message.sendMessage(message.chat, {
        image: {
-         url: _0x2878ec.all[0].thumbnail
+         url: searchResults.all[0].thumbnail
        },
-       caption: _0x4186e4
-     }, {
-       quoted: _0x1c8285
-     });
-   } catch (_0x5089b0) {}
- });
+       caption: responseText
+     }, { quoted: message });
+
+   } catch (error) {
+     // Gestion des erreurs
+     console.error("Error in 'yts' command:", error);
+     await message.reply("*_An error occurred while searching for the song. Please try again later._*");
+   }
+});
  smd({
    pattern: "ytmp4",
    alias: ["ytv", "ytvid", "ytvideo"],
