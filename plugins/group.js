@@ -759,48 +759,58 @@ const {
      await _0x5e533c.error(_0x14d7b9 + "\n\ncommand: kick", _0x14d7b9);
    }
  });
-smd({
-    pattern: "kickall",
-    fromMe: mode,
-    desc: "Kicks all non-admin members from the group.",
-    category: "group",
-    react: "💥",
-    filename: __filename,
-},
-async (message, match) => {
+cmd({
+  pattern: "kickall",
+  alias: ["byeall"],
+  desc: "Kicks all non-admin users from the group.",
+  category: "group",
+  react: "⚠️",
+  filename: __filename,
+  use: "",
+}, async (_0x5e533c, _0x2a29f6) => {
+  try {
     // Check if the command is used in a group
-    if (!message.isGroup) return await message.reply("_This command is for groups only._");
-
-    // Check if the bot is an admin
-    const isBotAdmin = await isAdmin(message.jid, message.user, message.client);
-    if (!isBotAdmin) return await message.reply("_I'm not an admin in this group._");
-
-    // Check if the user executing the command is an admin
-    const isUserAdmin = await isAdmin(message.jid, message.participant, message.client);
-    if (!isUserAdmin) return await message.reply("_Only group admins can use this command._");
-
-    // Retrieve group metadata to get participants
-    const groupMetadata = await message.client.groupMetadata(message.jid);
-    const participants = groupMetadata.participants;
-
-    // Filter out admin members
-    const admins = participants.filter((p) => p.admin);
-    const nonAdmins = participants.filter((p) => !admins.some((a) => a.id === p.id));
-
-    // If there are no non-admin members, send a confirmation message
-    if (nonAdmins.length === 0) {
-        return await message.reply("_There are no non-admin members to kick._");
+    if (!_0x5e533c.isGroup) {
+      return _0x5e533c.reply(tlang().group);
     }
 
-    // Iterate through non-admin members and remove them from the group
-    for (const member of nonAdmins) {
-        await message.client.groupParticipantsUpdate(message.jid, [member.id], "remove").catch((err) => {
-            console.error(`Failed to remove ${member.id}:`, err);
-        });
+    // Check if the bot has admin privileges in the group
+    if (!_0x5e533c.isBotAdmin) {
+      return await _0x5e533c.reply("*_I'm not an admin in this group 😭_*");
     }
 
-    // Send a confirmation message after successfully kicking members
-    return await message.reply(`_Successfully kicked ${nonAdmins.length} non-admin members from the group._`);
+    // Check if the user issuing the command is an admin
+    if (!_0x5e533c.isAdmin) {
+      return _0x5e533c.reply(tlang().admin);
+    }
+
+    // Get all participants in the group
+    const participants = await _0x5e533c.bot.groupMetadata(_0x5e533c.chat).then((meta) => meta.participants);
+
+    // Filter out admins and the bot, leaving only non-admins
+    const toKick = participants
+      .filter((member) => !member.admin && !_0x5e533c.checkBot(member.id))
+      .map((member) => member.id);
+
+    // If no non-admins to kick
+    if (toKick.length === 0) {
+      return await _0x5e533c.reply("*There are no non-admin members to kick 😅.*");
+    }
+
+    // Kick the non-admin users
+    for (const member of toKick) {
+      await _0x5e533c.bot.groupParticipantsUpdate(_0x5e533c.chat, [member], "remove");
+      await _0x5e533c.send(`*@${member.split("@")[0]} has been kicked 🤣.*`, {
+        mentions: [member],
+      });
+    }
+
+    // Notify that the action was completed
+    await _0x5e533c.send("*All non-admin members have been kicked 😎.*");
+  } catch (error) {
+    // Log errors if any occur
+    await _0x5e533c.error(error + "\n\ncommand: kickall", error);
+  }
 });
  smd({
    pattern: "group",
